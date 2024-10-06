@@ -1,4 +1,4 @@
-#Döviz Dönüştürücü Uygulaması
+# Döviz Dönüştürücü Uygulaması
 
 Flask kullanarak basit bir döviz dönüştürücü uygulaması tasarlanmıştır. Kullanıcılar, bir para biriminden diğerine döviz çevirisi yapabilirler.
 
