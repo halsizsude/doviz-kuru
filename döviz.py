@@ -1,9 +1,10 @@
+from flask import Flask, render_template, request
 import requests
 
+app = Flask(__name__)
 
 API_KEY = '52ef80f97d1737e2f1e4b023'
 BASE_URL = 'https://v6.exchangerate-api.com/v6'
-
 
 list_of_currencies = [
     "USD", "EUR", "GBP", "ILS", "DKK", "CAD", "IDR", "BGN",
@@ -21,30 +22,28 @@ def get_exchange_rate(c1, c2):
         if rate:
             return rate
         else:
-            print("Geçersiz para birimi.")
             return None
     else:
-        print(f"Hata: {response.status_code} - {response.text}")
         return None
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = None
+    if request.method == 'POST':
+        c1 = request.form.get('from_currency')
+        c2 = request.form.get('to_currency')
+        value_c1 = request.form.get('amount')
 
-c1 = input(f"Lütfen bir para birimi seçiniz:\n{list_of_currencies}\n").strip().upper()
-if c1 not in list_of_currencies:
-    print("Geçersiz para birimi. Programdan çıkılıyor.")
-    exit()
+        if c1 in list_of_currencies and c2 in list_of_currencies and value_c1.replace('.', '', 1).isdigit():
+            rate = get_exchange_rate(c1, c2)
+            if rate:
+                result = round(float(value_c1) * rate, 2)
+            else:
+                result = "Geçersiz para birimi veya API hatası."
+        else:
+            result = "Lütfen geçerli bilgileri girin."
 
-value_c1 = input("Çevirmek istediğiniz miktar ne kadar?\n")
-if not value_c1.replace('.', '', 1).isdigit():
-    print("Geçersiz miktar. Lütfen sayısal bir değer girin.")
-    exit()
+    return render_template('index.html', currencies=list_of_currencies, result=result)
 
-c2 = input(f"Hangi para birimine çevirmek istersiniz?\n{list_of_currencies}\n").strip().upper()
-if c2 not in list_of_currencies:
-    print("Geçersiz para birimi. Programdan çıkılıyor.")
-    exit()
-
-
-rate = get_exchange_rate(c1, c2)
-if rate:
-    result = rate * float(value_c1)
-    print(f"{value_c1} {c1} = {result:.2f} {c2}.")
+if __name__ == '__main__':
+    app.run(debug=True)
